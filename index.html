@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>Magik Trainer</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4CAF50">
+
 
 <style>
 body{
@@ -239,9 +241,10 @@ render();
 </script>
 <script>
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
+  navigator.serviceWorker.register("./sw.js", { scope: "./" });
 }
 </script>
+
 </body>
 </html>
 
