@@ -1,55 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Magik Trainer</title>
+<meta charset="UTF-8">
+<title>Magik Trainer</title>
 
-  <style>
-    body{
-      margin:0;
-      font-family: system-ui;
-      background:#f5f7fb;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-    }
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#f5f7fb;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
 
-    .app{
-      width:320px;
-      background:white;
-      border-radius:20px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.15);
-      padding:20px;
-      text-align:center;
-    }
+.app{
+  width:320px;
+  background:white;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.15);
+  padding:20px;
+}
 
-    button{
-      margin-top:20px;
-      padding:15px;
-      width:100%;
-      border:none;
-      border-radius:12px;
-      font-size:18px;
-      background:#4CAF50;
-      color:white;
-      cursor:pointer;
-    }
+button{
+  margin-top:20px;
+  padding:15px;
+  width:100%;
+  border:none;
+  border-radius:12px;
+  font-size:18px;
+  background:#4CAF50;
+  color:white;
+  cursor:pointer;
+}
 
-    button:hover{
-      background:#43a047;
-    }
-  </style>
+input, select{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
 
+.hidden{
+  display:none;
+}
+</style>
 </head>
+
 <body>
 
 <div class="app">
-  <h2>Magik Trainer</h2>
-  <p>Tracker treningów</p>
 
-  <button>+ Dodaj trening</button>
+<h2>Magik Trainer</h2>
+
+<button onclick="showForm()">+ Dodaj trening</button>
+
+<div id="form" class="hidden">
+
+<select>
+<option>Flyball</option>
+<option>Posłuszeństwo</option>
+<option>Nosework</option>
+<option>Spacer treningowy</option>
+</select>
+
+<input placeholder="Czas (minuty)">
+
+<input placeholder="Notatka">
+
+<button>Zapisz trening</button>
+
 </div>
+
+</div>
+
+<script>
+function showForm(){
+  document.getElementById("form").classList.remove("hidden");
+}
+</script>
 
 </body>
 </html>
