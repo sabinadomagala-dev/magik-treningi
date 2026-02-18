@@ -132,12 +132,30 @@ function hideForm(){
 }
 
 function loadTrainings(){
+  let list = [];
   try{
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
   }catch{
-    return [];
+    list = [];
   }
+
+  // MIGRACJA: dopisz id do starych wpisów, które go nie mają
+  let changed = false;
+  list = list.map(t => {
+    if(!t.id){
+      changed = true;
+      return {
+        ...t,
+        id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random()
+      };
+    }
+    return t;
+  });
+
+  if(changed) saveTrainings(list);
+  return list;
 }
+
 
 function saveTrainings(list){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
