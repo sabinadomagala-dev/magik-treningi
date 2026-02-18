@@ -130,6 +130,8 @@ const STORAGE_KEY = "magik_trainings_v1";
 let mode = "add";        // "add" | "edit"
 let editingId = null;    // id wpisu edytowanego
 
+const itemsEl = document.getElementById("items");
+
 function showForm(){ document.getElementById("form").classList.remove("hidden"); }
 function hideForm(){ document.getElementById("form").classList.add("hidden"); }
 
@@ -195,7 +197,7 @@ function save(){
 
   if(mode === "add"){
     list.push({
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random(),
+      id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random(),
       type,
       minutes,
       note,
@@ -208,13 +210,7 @@ function save(){
       alert("Nie mogę znaleźć wpisu do edycji.");
       return;
     }
-    list[idx] = {
-      ...list[idx],
-      type,
-      minutes,
-      note,
-      updatedAt: Date.now()
-    };
+    list[idx] = { ...list[idx], type, minutes, note, updatedAt: Date.now() };
   }
 
   saveTrainings(list);
@@ -237,16 +233,22 @@ function deleteCurrent(){
   render();
 }
 
+function quickDelete(id){
+  if(!confirm("Usunąć ten wpis?")) return;
+  const list = loadTrainings().filter(x => x.id !== id);
+  saveTrainings(list);
+  render();
+}
+
 function render(){
-  const items = document.getElementById("items");
   const list = loadTrainings();
 
   if(list.length === 0){
-    items.innerHTML = "<p class='meta'>Brak wpisów. Dodaj pierwszy trening 🙂</p>";
+    itemsEl.innerHTML = "<p class='meta'>Brak wpisów. Dodaj pierwszy trening 🙂</p>";
     return;
   }
 
-  items.innerHTML = list
+  itemsEl.innerHTML = list
     .slice().reverse()
     .map(t => `
       <div class="item">
@@ -257,18 +259,11 @@ function render(){
           ${t.updatedAt && t.updatedAt !== t.createdAt ? " • edytowane" : ""}
         </div>
         <div class="row">
-          <button class="secondary" onclick="startEdit('${escapeAttr(t.id)}')">Edytuj</button>
-          <button class="danger" onclick="quickDelete('${escapeAttr(t.id)}')">Usuń</button>
+          <button class="secondary" data-action="edit" data-id="${escapeHtml(t.id)}">Edytuj</button>
+          <button class="danger" data-action="delete" data-id="${escapeHtml(t.id)}">Usuń</button>
         </div>
       </div>
     `).join("");
-}
-
-function quickDelete(id){
-  if(!confirm("Usunąć ten wpis?")) return;
-  const list = loadTrainings().filter(x => x.id !== id);
-  saveTrainings(list);
-  render();
 }
 
 function escapeHtml(str){
@@ -279,13 +274,28 @@ function escapeHtml(str){
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
-function escapeAttr(str){
-  // do atrybutów w onclick
-  return String(str).replaceAll("\\","\\\\").replaceAll("'","\\'");
-}
 
-// start
+/* --- podpinamy kliknięcia raz, na kontenerze listy --- */
+itemsEl.addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if(!btn) return;
+
+  const action = btn.dataset.action;
+  const id = btn.dataset.id;
+
+  if(action === "edit") startEdit(id);
+  if(action === "delete") quickDelete(id);
+});
+
+/* --- wystawiamy funkcje dla przycisków z HTML --- */
+window.startAdd = startAdd;
+window.cancel = cancel;
+window.save = save;
+window.deleteCurrent = deleteCurrent;
+
+/* start */
 render();
 </script>
+
 </body>
 </html>
