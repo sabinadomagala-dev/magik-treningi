@@ -24,12 +24,12 @@ body{
 }
 
 button{
-  margin-top:12px;
-  padding:12px;
+  margin-top:16px;
+  padding:14px;
   width:100%;
   border:none;
   border-radius:12px;
-  font-size:15px;
+  font-size:16px;
   background:#4CAF50;
   color:white;
   cursor:pointer;
@@ -95,11 +95,9 @@ input, select{
 <div class="app">
   <h2>Magik Trainer</h2>
 
-  <button onclick="startAdd()">+ Dodaj trening</button>
+  <button onclick="showForm()">+ Dodaj trening</button>
 
   <div id="form" class="hidden">
-    <div class="meta" id="formTitle">Dodaj trening</div>
-
     <select id="type">
       <option>Flyball</option>
       <option>Posłuszeństwo</option>
@@ -111,12 +109,8 @@ input, select{
     <input id="minutes" type="number" min="0" placeholder="Czas (minuty)">
     <input id="note" placeholder="Notatka (opcjonalnie)">
 
-    <button id="saveBtn" onclick="save()">Zapisz</button>
-
-    <div class="row">
-      <button class="secondary" onclick="cancel()">Anuluj</button>
-      <button class="danger hidden" id="deleteBtn" onclick="deleteCurrent()">Usuń</button>
-    </div>
+    <button onclick="saveTraining()">Zapisz trening</button>
+    <button class="secondary" onclick="hideForm()">Anuluj</button>
   </div>
 
   <div class="list">
@@ -127,117 +121,26 @@ input, select{
 
 <script>
 const STORAGE_KEY = "magik_trainings_v1";
-let mode = "add";        // "add" | "edit"
-let editingId = null;    // id wpisu edytowanego
-
 const itemsEl = document.getElementById("items");
 
-function showForm(){ document.getElementById("form").classList.remove("hidden"); }
-function hideForm(){ document.getElementById("form").classList.add("hidden"); }
+function showForm(){
+  document.getElementById("form").classList.remove("hidden");
+}
+
+function hideForm(){
+  document.getElementById("form").classList.add("hidden");
+}
 
 function loadTrainings(){
-  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch{ return []; }
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  }catch{
+    return [];
+  }
 }
+
 function saveTrainings(list){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-}
-
-function startAdd(){
-  mode = "add";
-  editingId = null;
-
-  document.getElementById("formTitle").textContent = "Dodaj trening";
-  document.getElementById("saveBtn").textContent = "Zapisz trening";
-  document.getElementById("deleteBtn").classList.add("hidden");
-
-  document.getElementById("type").value = "Flyball";
-  document.getElementById("minutes").value = "";
-  document.getElementById("note").value = "";
-
-  showForm();
-}
-
-function startEdit(id){
-  const list = loadTrainings();
-  const t = list.find(x => x.id === id);
-  if(!t) return;
-
-  mode = "edit";
-  editingId = id;
-
-  document.getElementById("formTitle").textContent = "Edytuj trening";
-  document.getElementById("saveBtn").textContent = "Zapisz zmiany";
-  document.getElementById("deleteBtn").classList.remove("hidden");
-
-  document.getElementById("type").value = t.type;
-  document.getElementById("minutes").value = t.minutes;
-  document.getElementById("note").value = t.note || "";
-
-  showForm();
-}
-
-function cancel(){
-  hideForm();
-  mode = "add";
-  editingId = null;
-}
-
-function save(){
-  const type = document.getElementById("type").value;
-  const minutes = Number(document.getElementById("minutes").value || 0);
-  const note = document.getElementById("note").value.trim();
-
-  if(minutes <= 0){
-    alert("Podaj czas w minutach (większy niż 0).");
-    return;
-  }
-
-  const list = loadTrainings();
-
-  if(mode === "add"){
-    list.push({
-      id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random(),
-      type,
-      minutes,
-      note,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    });
-  }else{
-    const idx = list.findIndex(x => x.id === editingId);
-    if(idx === -1){
-      alert("Nie mogę znaleźć wpisu do edycji.");
-      return;
-    }
-    list[idx] = { ...list[idx], type, minutes, note, updatedAt: Date.now() };
-  }
-
-  saveTrainings(list);
-  hideForm();
-  mode = "add";
-  editingId = null;
-  render();
-}
-
-function deleteCurrent(){
-  if(!editingId) return;
-  if(!confirm("Usunąć ten wpis?")) return;
-
-  const list = loadTrainings().filter(x => x.id !== editingId);
-  saveTrainings(list);
-
-  hideForm();
-  mode = "add";
-  editingId = null;
-  render();
-}
-
-function quickDelete(id){
-  if(!confirm("Usunąć ten wpis?")) return;
-  const list = loadTrainings().filter(x => x.id !== id);
-  saveTrainings(list);
-  render();
 }
 
 function render(){
@@ -254,17 +157,55 @@ function render(){
       <div class="item">
         <div><strong>${escapeHtml(t.type)}</strong> • ${t.minutes} min</div>
         ${t.note ? `<div class="meta">${escapeHtml(t.note)}</div>` : ""}
-        <div class="meta">
-          ${new Date(t.createdAt).toLocaleString()}
-          ${t.updatedAt && t.updatedAt !== t.createdAt ? " • edytowane" : ""}
-        </div>
+        <div class="meta">${new Date(t.createdAt).toLocaleString()}</div>
+
         <div class="row">
-          <button class="secondary" data-action="edit" data-id="${escapeHtml(t.id)}">Edytuj</button>
           <button class="danger" data-action="delete" data-id="${escapeHtml(t.id)}">Usuń</button>
         </div>
       </div>
     `).join("");
 }
+
+function saveTraining(){
+  const type = document.getElementById("type").value;
+  const minutes = Number(document.getElementById("minutes").value || 0);
+  const note = document.getElementById("note").value.trim();
+
+  if(minutes <= 0){
+    alert("Podaj czas w minutach (większy niż 0).");
+    return;
+  }
+
+  const list = loadTrainings();
+  list.push({
+    id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random(),
+    type,
+    minutes,
+    note,
+    createdAt: Date.now()
+  });
+  saveTrainings(list);
+
+  document.getElementById("minutes").value = "";
+  document.getElementById("note").value = "";
+  hideForm();
+
+  render();
+}
+
+itemsEl.addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if(!btn) return;
+
+  if(btn.dataset.action === "delete"){
+    const id = btn.dataset.id;
+    if(!confirm("Usunąć ten wpis?")) return;
+
+    const list = loadTrainings().filter(x => x.id !== id);
+    saveTrainings(list);
+    render();
+  }
+});
 
 function escapeHtml(str){
   return String(str)
@@ -275,27 +216,8 @@ function escapeHtml(str){
     .replaceAll("'","&#039;");
 }
 
-/* --- podpinamy kliknięcia raz, na kontenerze listy --- */
-itemsEl.addEventListener("click", (e) => {
-  const btn = e.target.closest("button");
-  if(!btn) return;
-
-  const action = btn.dataset.action;
-  const id = btn.dataset.id;
-
-  if(action === "edit") startEdit(id);
-  if(action === "delete") quickDelete(id);
-});
-
-/* --- wystawiamy funkcje dla przycisków z HTML --- */
-window.startAdd = startAdd;
-window.cancel = cancel;
-window.save = save;
-window.deleteCurrent = deleteCurrent;
-
-/* start */
 render();
 </script>
-
 </body>
 </html>
+
