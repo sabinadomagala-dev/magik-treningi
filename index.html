@@ -24,15 +24,20 @@ body{
 }
 
 button{
-  margin-top:20px;
-  padding:15px;
+  margin-top:16px;
+  padding:14px;
   width:100%;
   border:none;
   border-radius:12px;
-  font-size:18px;
+  font-size:16px;
   background:#4CAF50;
   color:white;
   cursor:pointer;
+}
+
+button.secondary{
+  background:#e9eef7;
+  color:#111;
 }
 
 input, select{
@@ -43,44 +48,139 @@ input, select{
   border:1px solid #ddd;
 }
 
-.hidden{
-  display:none;
+.hidden{ display:none; }
+
+.list{
+  margin-top:16px;
+  padding-top:12px;
+  border-top:1px solid #eee;
+}
+
+.item{
+  background:#f7f9ff;
+  border:1px solid #e8ecff;
+  border-radius:12px;
+  padding:10px;
+  margin-top:10px;
+}
+
+.meta{
+  font-size:12px;
+  opacity:0.75;
+  margin-top:4px;
 }
 </style>
 </head>
 
 <body>
-
 <div class="app">
+  <h2>Magik Trainer</h2>
 
-<h2>Magik Trainer</h2>
+  <button onclick="showForm()">+ Dodaj trening</button>
 
-<button onclick="showForm()">+ Dodaj trening</button>
+  <div id="form" class="hidden">
+    <select id="type">
+      <option>Flyball</option>
+      <option>Posłuszeństwo</option>
+      <option>Nosework</option>
+      <option>Spacer treningowy</option>
+      <option>Regulacja / wyciszenie</option>
+    </select>
 
-<div id="form" class="hidden">
+    <input id="minutes" type="number" min="0" placeholder="Czas (minuty)">
+    <input id="note" placeholder="Notatka (opcjonalnie)">
 
-<select>
-<option>Flyball</option>
-<option>Posłuszeństwo</option>
-<option>Nosework</option>
-<option>Spacer treningowy</option>
-</select>
+    <button onclick="saveTraining()">Zapisz trening</button>
+    <button class="secondary" onclick="hideForm()">Anuluj</button>
+  </div>
 
-<input placeholder="Czas (minuty)">
-
-<input placeholder="Notatka">
-
-<button>Zapisz trening</button>
-
-</div>
-
+  <div class="list">
+    <strong>Ostatnie treningi</strong>
+    <div id="items"></div>
+  </div>
 </div>
 
 <script>
+const STORAGE_KEY = "magik_trainings_v1";
+
 function showForm(){
   document.getElementById("form").classList.remove("hidden");
 }
-</script>
 
+function hideForm(){
+  document.getElementById("form").classList.add("hidden");
+}
+
+function loadTrainings(){
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  }catch{
+    return [];
+  }
+}
+
+function saveTrainings(list){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+function render(){
+  const items = document.getElementById("items");
+  const list = loadTrainings();
+
+  if(list.length === 0){
+    items.innerHTML = "<p class='meta'>Brak wpisów. Dodaj pierwszy trening 🙂</p>";
+    return;
+  }
+
+  items.innerHTML = list
+    .slice().reverse()
+    .map(t => `
+      <div class="item">
+        <div><strong>${escapeHtml(t.type)}</strong> • ${t.minutes} min</div>
+        ${t.note ? `<div class="meta">${escapeHtml(t.note)}</div>` : ""}
+        <div class="meta">${new Date(t.createdAt).toLocaleString()}</div>
+      </div>
+    `).join("");
+}
+
+function saveTraining(){
+  const type = document.getElementById("type").value;
+  const minutes = Number(document.getElementById("minutes").value || 0);
+  const note = document.getElementById("note").value.trim();
+
+  if(minutes <= 0){
+    alert("Podaj czas w minutach (większy niż 0).");
+    return;
+  }
+
+  const list = loadTrainings();
+  list.push({
+    type,
+    minutes,
+    note,
+    createdAt: Date.now()
+  });
+  saveTrainings(list);
+
+  // reset formularza
+  document.getElementById("minutes").value = "";
+  document.getElementById("note").value = "";
+  hideForm();
+
+  render();
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+// start
+render();
+</script>
 </body>
 </html>
