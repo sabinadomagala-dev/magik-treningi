@@ -1,250 +1,371 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Magik Trainer</title>
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#4CAF50">
+  <meta charset="UTF-8">
+  <title>Magik Trainer</title>
 
+  <!-- mega ważne na telefonie -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-body{
-  margin:0;
-  font-family:system-ui;
-  background:#f5f7fb;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#4CAF50">
 
-.app{
-  width:320px;
-  background:white;
-  border-radius:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.15);
-  padding:20px;
-}
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --border:#e8ecff;
+      --muted:rgba(0,0,0,0.65);
+      --btn:#4CAF50;
+    }
 
-button{
-  margin-top:16px;
-  padding:14px;
-  width:100%;
-  border:none;
-  border-radius:12px;
-  font-size:16px;
-  background:#4CAF50;
-  color:white;
-  cursor:pointer;
-}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:var(--bg);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:stretch;
+    }
 
-button.secondary{
-  background:#e9eef7;
-  color:#111;
-}
+    /* Mobile-first: prawie pełna szerokość */
+    .app{
+      width:min(520px, 96vw);
+      margin:10px 0;
+      background:var(--card);
+      border-radius:22px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.12);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
 
-button.danger{
-  background:#ffebee;
-  color:#111;
-}
+    h1{
+      font-size:22px;
+      margin:0;
+      line-height:1.1;
+    }
 
-.row{
-  display:flex;
-  gap:8px;
-  margin-top:10px;
-}
+    .muted{ color:var(--muted); font-size:14px; }
 
-.row button{
-  width:auto;
-  flex:1;
-  margin-top:0;
-  padding:10px;
-  font-size:13px;
-}
+    .section{
+      border:1px solid #eee;
+      border-radius:18px;
+      padding:14px;
+      background:#fff;
+    }
 
-input, select{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  border-radius:8px;
-  border:1px solid #ddd;
-}
+    label{
+      display:block;
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
 
-.hidden{ display:none; }
+    select, input{
+      width:100%;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid #ddd;
+      font-size:16px;
+      box-sizing:border-box;
+    }
 
-.list{
-  margin-top:16px;
-  padding-top:12px;
-  border-top:1px solid #eee;
-}
+    .timerBox{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
 
-.item{
-  background:#f7f9ff;
-  border:1px solid #e8ecff;
-  border-radius:12px;
-  padding:10px;
-  margin-top:10px;
-}
+    .time{
+      font-size:56px;
+      font-weight:700;
+      letter-spacing:1px;
+      text-align:center;
+      padding:10px 0;
+    }
 
-.meta{
-  font-size:12px;
-  opacity:0.75;
-  margin-top:4px;
-}
-</style>
+    .row{
+      display:flex;
+      gap:10px;
+    }
+
+    button{
+      padding:16px;
+      border:none;
+      border-radius:16px;
+      font-size:18px;
+      font-weight:650;
+      cursor:pointer;
+      width:100%;
+    }
+
+    .primary{ background:var(--btn); color:white; }
+    .secondary{ background:#e9eef7; color:#111; }
+    .danger{ background:#ffebee; color:#111; }
+
+    .list{
+      border-top:1px solid #eee;
+      padding-top:12px;
+    }
+
+    .item{
+      background:#f7f9ff;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px;
+      margin-top:10px;
+    }
+
+    .meta{
+      font-size:12px;
+      opacity:0.75;
+      margin-top:4px;
+    }
+
+    /* Na większych ekranach delikatnie zwiększ przestrzeń */
+    @media (min-width: 700px){
+      .app{ margin:20px 0; padding:22px; }
+      .time{ font-size:64px; }
+      button{ font-size:18px; }
+    }
+  </style>
 </head>
 
 <body>
-<div class="app">
-  <h2>Magik Trainer</h2>
+  <div class="app">
+    <div>
+      <h1>Magik Trainer</h1>
+      <div class="muted">Treningi • licznik • zapis lokalny</div>
+    </div>
 
-  <button onclick="showForm()">+ Dodaj trening</button>
+    <!-- LICZNIK -->
+    <div class="section timerBox">
+      <div>
+        <label>Kategoria (dla licznika)</label>
+        <select id="liveType">
+          <option>Flyball</option>
+          <option>Posłuszeństwo</option>
+          <option>Nosework</option>
+          <option>Spacer treningowy</option>
+          <option>Regulacja / wyciszenie</option>
+        </select>
+      </div>
 
-  <div id="form" class="hidden">
-    <select id="type">
-      <option>Flyball</option>
-      <option>Posłuszeństwo</option>
-      <option>Nosework</option>
-      <option>Spacer treningowy</option>
-      <option>Regulacja / wyciszenie</option>
-    </select>
+      <div class="time" id="timeDisplay">00:00</div>
 
-    <input id="minutes" type="number" min="0" placeholder="Czas (minuty)">
-    <input id="note" placeholder="Notatka (opcjonalnie)">
+      <div class="row">
+        <button class="primary" id="startBtn">START</button>
+        <button class="secondary" id="stopBtn" disabled>STOP + ZAPISZ</button>
+      </div>
 
-    <button onclick="saveTraining()">Zapisz trening</button>
-    <button class="secondary" onclick="hideForm()">Anuluj</button>
+      <div>
+        <label>Notatka (opcjonalnie)</label>
+        <input id="liveNote" placeholder="np. 3× powtórki, dużo pobudzenia na starcie">
+      </div>
+    </div>
+
+    <!-- DODAJ RĘCZNIE -->
+    <div class="section" id="manualSection">
+      <div class="muted" style="margin-bottom:8px;">Ręczny wpis (gdy nie używasz licznika)</div>
+
+      <label>Kategoria</label>
+      <select id="type">
+        <option>Flyball</option>
+        <option>Posłuszeństwo</option>
+        <option>Nosework</option>
+        <option>Spacer treningowy</option>
+        <option>Regulacja / wyciszenie</option>
+      </select>
+
+      <label style="margin-top:10px;">Czas (minuty)</label>
+      <input id="minutes" type="number" min="0" placeholder="np. 15">
+
+      <label style="margin-top:10px;">Notatka</label>
+      <input id="note" placeholder="opcjonalnie">
+
+      <div class="row" style="margin-top:10px;">
+        <button class="primary" id="saveManualBtn">Zapisz</button>
+        <button class="secondary" id="clearManualBtn">Wyczyść</button>
+      </div>
+    </div>
+
+    <!-- LISTA -->
+    <div class="list">
+      <strong>Ostatnie treningi</strong>
+      <div id="items"></div>
+    </div>
   </div>
-
-  <div class="list">
-    <strong>Ostatnie treningi</strong>
-    <div id="items"></div>
-  </div>
-</div>
 
 <script>
-const STORAGE_KEY = "magik_trainings_v1";
-const itemsEl = document.getElementById("items");
-
-function showForm(){
-  document.getElementById("form").classList.remove("hidden");
-}
-
-function hideForm(){
-  document.getElementById("form").classList.add("hidden");
-}
-
-function loadTrainings(){
-  let list = [];
-  try{
-    list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  }catch{
-    list = [];
+  // --- PWA SW ---
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js", { scope: "./" });
   }
 
-  // MIGRACJA: dopisz id do starych wpisów, które go nie mają
-  let changed = false;
-  list = list.map(t => {
-    if(!t.id){
-      changed = true;
-      return {
-        ...t,
-        id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random()
-      };
+  const STORAGE_KEY = "magik_trainings_v1";
+  const itemsEl = document.getElementById("items");
+
+  // --- TIMER STATE ---
+  let timerRunning = false;
+  let startedAt = null;
+  let tickHandle = null;
+
+  function nowMs(){ return Date.now(); }
+
+  function formatMMSS(ms){
+    const totalSec = Math.floor(ms / 1000);
+    const mm = String(Math.floor(totalSec / 60)).padStart(2, "0");
+    const ss = String(totalSec % 60).padStart(2, "0");
+    return `${mm}:${ss}`;
+  }
+
+  function setTimeDisplay(ms){
+    document.getElementById("timeDisplay").textContent = formatMMSS(ms);
+  }
+
+  function loadTrainings(){
+    let list = [];
+    try{ list = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch{ list = []; }
+
+    // migracja: dopisz id do starych wpisów
+    let changed = false;
+    list = list.map(t => {
+      if(!t.id){
+        changed = true;
+        return { ...t, id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random() };
+      }
+      return t;
+    });
+    if(changed) saveTrainings(list);
+
+    return list;
+  }
+
+  function saveTrainings(list){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+
+  function addTraining({type, minutes, note}){
+    const list = loadTrainings();
+    list.push({
+      id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random(),
+      type,
+      minutes,
+      note: note || "",
+      createdAt: Date.now()
+    });
+    saveTrainings(list);
+    render();
+  }
+
+  function render(){
+    const list = loadTrainings();
+    if(list.length === 0){
+      itemsEl.innerHTML = "<p class='meta'>Brak wpisów. Dodaj pierwszy trening 🙂</p>";
+      return;
     }
-    return t;
-  });
-
-  if(changed) saveTrainings(list);
-  return list;
-}
-
-
-function saveTrainings(list){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-}
-
-function render(){
-  const list = loadTrainings();
-
-  if(list.length === 0){
-    itemsEl.innerHTML = "<p class='meta'>Brak wpisów. Dodaj pierwszy trening 🙂</p>";
-    return;
-  }
-
-  itemsEl.innerHTML = list
-    .slice().reverse()
-    .map(t => `
+    itemsEl.innerHTML = list.slice().reverse().map(t => `
       <div class="item">
         <div><strong>${escapeHtml(t.type)}</strong> • ${t.minutes} min</div>
         ${t.note ? `<div class="meta">${escapeHtml(t.note)}</div>` : ""}
         <div class="meta">${new Date(t.createdAt).toLocaleString()}</div>
-
-        <div class="row">
+        <div class="row" style="margin-top:8px;">
           <button class="danger" data-action="delete" data-id="${escapeHtml(t.id)}">Usuń</button>
         </div>
       </div>
     `).join("");
-}
-
-function saveTraining(){
-  const type = document.getElementById("type").value;
-  const minutes = Number(document.getElementById("minutes").value || 0);
-  const note = document.getElementById("note").value.trim();
-
-  if(minutes <= 0){
-    alert("Podaj czas w minutach (większy niż 0).");
-    return;
   }
 
-  const list = loadTrainings();
-  list.push({
-    id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random(),
-    type,
-    minutes,
-    note,
-    createdAt: Date.now()
+  itemsEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if(!btn) return;
+    if(btn.dataset.action === "delete"){
+      const id = btn.dataset.id;
+      if(!confirm("Usunąć ten wpis?")) return;
+      const list = loadTrainings().filter(x => x.id !== id);
+      saveTrainings(list);
+      render();
+    }
   });
-  saveTrainings(list);
 
-  document.getElementById("minutes").value = "";
-  document.getElementById("note").value = "";
-  hideForm();
-
-  render();
-}
-
-itemsEl.addEventListener("click", (e) => {
-  const btn = e.target.closest("button");
-  if(!btn) return;
-
-  if(btn.dataset.action === "delete"){
-    const id = btn.dataset.id;
-    if(!confirm("Usunąć ten wpis?")) return;
-
-    const list = loadTrainings().filter(x => x.id !== id);
-    saveTrainings(list);
-    render();
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
   }
-});
 
-function escapeHtml(str){
-  return String(str)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
+  // --- TIMER BUTTONS ---
+  const startBtn = document.getElementById("startBtn");
+  const stopBtn = document.getElementById("stopBtn");
 
-render();
+  startBtn.addEventListener("click", () => {
+    if(timerRunning) return;
+    timerRunning = true;
+    startedAt = nowMs();
+    setTimeDisplay(0);
+
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+
+    tickHandle = setInterval(() => {
+      setTimeDisplay(nowMs() - startedAt);
+    }, 250);
+  });
+
+  stopBtn.addEventListener("click", () => {
+    if(!timerRunning) return;
+
+    const elapsedMs = nowMs() - startedAt;
+    clearInterval(tickHandle);
+    tickHandle = null;
+    timerRunning = false;
+
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+
+    // minuty: zaokrąglamy do najbliższej minuty, ale minimum 1 min
+    const minutes = Math.max(1, Math.round(elapsedMs / 60000));
+
+    const type = document.getElementById("liveType").value;
+    const note = document.getElementById("liveNote").value.trim();
+
+    addTraining({ type, minutes, note });
+
+    // reset UI licznika
+    document.getElementById("liveNote").value = "";
+    setTimeDisplay(0);
+  });
+
+  // --- MANUAL SAVE ---
+  document.getElementById("saveManualBtn").addEventListener("click", () => {
+    const type = document.getElementById("type").value;
+    const minutes = Number(document.getElementById("minutes").value || 0);
+    const note = document.getElementById("note").value.trim();
+
+    if(minutes <= 0){
+      alert("Podaj czas w minutach (większy niż 0).");
+      return;
+    }
+    addTraining({ type, minutes, note });
+
+    document.getElementById("minutes").value = "";
+    document.getElementById("note").value = "";
+  });
+
+  document.getElementById("clearManualBtn").addEventListener("click", () => {
+    document.getElementById("minutes").value = "";
+    document.getElementById("note").value = "";
+  });
+
+  // start
+  render();
 </script>
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js", { scope: "./" });
-}
-</script>
-
 </body>
 </html>
-
